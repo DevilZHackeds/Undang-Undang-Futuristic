@@ -47,6 +47,7 @@ box-sizing: border-box;
 z-index: 100;
 }
 
+/* KONDISI DROPDOWN AWAL & ANIMASI */
 .dropdown{margin-bottom:15px;background:#111a33;border-radius:10px;overflow:hidden;border:1px solid rgba(0,234,255,0.1);transition:0.3s;}
 .dropdown-header{
 padding:14px;
@@ -66,7 +67,30 @@ box-shadow:0 0 15px rgba(0,234,255,0.4);
 color:#fff;
 }
 
-.dropdown-body{padding:10px;background:#0c1326;}
+/* Transisi mulus menggunakan max-height */
+.dropdown-body{
+padding: 0 10px;
+background:#0c1326;
+max-height: 0;
+overflow: hidden;
+transition: max-height 0.5s cubic-bezier(0, 1, 0, 1), padding 0.3s ease;
+}
+
+/* Class pembantu ketika dropdown aktif/terbuka */
+.dropdown.active .dropdown-body {
+max-height: 2000px; /* Nilai besar agar menampung banyak pasal, transisi diatur oleh cubic-bezier */
+padding: 10px;
+transition: max-height 0.8s cubic-bezier(1, 0, 1, 0), padding 0.3s ease;
+}
+
+.dropdown-header span {
+transition: transform 0.3s ease;
+display: inline-block;
+}
+
+.dropdown.active .dropdown-header span {
+transform: rotate(90deg); /* Animasi panah berputar saat dibuka */
+}
 
 .card{
 background:#1a2a5a;
@@ -259,7 +283,7 @@ const data = {
     {id_pasal: "menengah_2.4", kode:"2.4", nama:"MEMBAWA RED MONEY", denda:15000, penjara:"10 Bulan", link_with:[]},
     {id_pasal: "menengah_2.5", kode:"2.5", nama:"MELAKUKAN TINDAKAN KABUR FROM FEDERAL", denda:12000, penjara:"10 Bulan", link_with:[]},
     {id_pasal: "menengah_2.6", kode:"2.6", nama:"PENCEMARAN NAMA BAIK", denda:15000, penjara:"10 Bulan", link_with:[]},
-    {id_pasal: "menengah_2.7", kode:"2.7", nama:"MELAKUKAN PEMALAKAN / MELAKUKAN PERAMPOKAN TERHADAP WARGA (BEGAL)", denda:20000, penjara:"15 Bulan", link_with:[]},
+    {id_pasal: "menengah_2.7", kode:"2.7", nama:"MELAKUKAN PEMALAKAN / MELAKUKAN PERAMPOKOM TERHADAP WARGA (BEGAL)", denda:20000, penjara:"15 Bulan", link_with:[]},
     {id_pasal: "menengah_2.8", kode:"2.8", nama:"MENCURI KENDARAAN WARGA (CARSTELLING)", denda:12000, penjara:"15 Bulan", link_with:[]},
     {id_pasal: "menengah_2.9", kode:"2.9", nama:"MEMBAWA BARANG ILEGAL (KEVLAR,LINGGIS,LOCKPICK)", denda:15000, penjara:"15 Bulan", link_with:[]},
     {id_pasal: "menengah_3", kode:"3", nama:"UPAYA MELAWAN PETUGAS", denda:15000, penjara:"15 Bulan", link_with:[]},
@@ -317,7 +341,8 @@ function render(filter = "") {
         
         if (filteredPasal.length === 0 && filter !== "") return;
         
-        let html = `<div class="dropdown"><div class="dropdown-header" onclick="toggle(this)">${k} (${filteredPasal.length}) <span>▼</span></div><div class="dropdown-body">`;
+        // Menghilangkan inline style display none agar transisi CSS max-height bisa bekerja penuh
+        let html = `<div class="dropdown"><div class="dropdown-header" onclick="toggle(this)">${k} (${filteredPasal.length}) <span>▶</span></div><div class="dropdown-body">`;
         
         filteredPasal.forEach(p => {
             const isChecked = selectedMap[p.id_pasal] ? "checked" : "";
@@ -336,16 +361,10 @@ function render(filter = "") {
     });
 }
 
+// Fungsi toggle baru berbasis Class List untuk animasi CSS yang halus
 function toggle(el) {
-    let b = el.nextElementSibling;
-    let span = el.querySelector("span");
-    if (b.style.display === 'none') {
-        b.style.display = 'block';
-        span.innerText = "▼";
-    } else {
-        b.style.display = 'none';
-        span.innerText = "►";
-    }
+    let parentDropdown = el.parentElement;
+    parentDropdown.classList.toggle("active");
 }
 
 function handleCheckboxChange(id_pasal, isChecked) {
@@ -408,7 +427,7 @@ function updateTotals() {
             });
         }
         
-        if (skipCalculation) return; // Prioritas hitungan mengambil data dari pasal Satlantas
+        if (skipCalculation) return; 
         
         // Parsing Denda
         let dVal = parseInt(item.denda);
